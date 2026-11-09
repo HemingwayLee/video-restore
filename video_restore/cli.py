@@ -126,7 +126,19 @@ def resolve_encoder(args, video_utils) -> tuple[str, str]:
     sys.exit(f"Unknown encoding preset '{name}'. Use --list-encoding-presets.")
 
 
+def _raise_keyboard_interrupt(signum, frame):
+    raise KeyboardInterrupt
+
+
 def main(argv: list[str] | None = None) -> None:
+    # Treat SIGTERM / SIGHUP (kill, closed terminal) like Ctrl-C so the restorer threads are
+    # stopped, the temp file is removed and atexit cleanup runs. Without this the process dies
+    # immediately and multiprocessing's resource_tracker warns about tqdm's leaked semaphore.
+    import signal
+    for name in ("SIGTERM", "SIGHUP"):
+        if hasattr(signal, name):
+            signal.signal(getattr(signal, name), _raise_keyboard_interrupt)
+
     args = build_parser().parse_args(argv)
 
     import torch
