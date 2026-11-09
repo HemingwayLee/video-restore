@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Launcher: run the video_restore CLI inside the project virtualenv.
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ ! -x "$ROOT/.venv/bin/python" ]]; then
+  echo "Virtualenv not found. Run ./setup.sh first." >&2
+  exit 1
+fi
+PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" exec "$ROOT/.venv/bin/python" -m video_restore "$@"
